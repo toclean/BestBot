@@ -1,0 +1,25 @@
+{
+    "commands":
+    [
+        {
+            "name": "Help",
+            "cmd": "help",
+            "summary": "Displays all possible commands"
+        },
+        {
+            "name": "Ping",
+            "cmd": "ping",
+            "summary": "Returns the bot's ping"
+        },
+        {
+            "name": "Join",
+            "cmd": "join",
+            "summary": "Connects bot to the voice channel"
+        },
+        {
+            "name": "Leave",
+            "cmd": "leave",
+            "summary": "Disconnects bot from the voice channel"
+        }
+    ]
+}
