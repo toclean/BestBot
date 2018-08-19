@@ -20,6 +20,11 @@
             "name": "Leave",
             "cmd": "leave",
             "summary": "Disconnects bot from the voice channel"
+        },
+        {
+            "name": "Play",
+            "cmd": "play",
+            "summary": "Adds and plays a song"
         }
     ]
 }
