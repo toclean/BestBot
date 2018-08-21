@@ -229,19 +229,14 @@ export class BestBot implements Bot
 
         if (!msg.content.includes(' '))
         {
-            return;
-        }
-        else
-        {
-            if (this.hasMusic() && this.music!.dispatcher && this.music!.dispatcher!.paused)
+            if (this.music && this.music.dispatcher && this.music.dispatcher.paused)
             {
-                this.music!.dispatcher!.resume;
+                this.music.dispatcher.resume();
             }
+            return;
         }
 
         const search = msg.content.substring(msg.content.indexOf(' ') + 1);
-
-        console.log(search);
 
         if (search.includes("http"))
         {
@@ -266,7 +261,28 @@ export class BestBot implements Bot
                 {
                     this.PlayLink(msg, this.music!.queue.songs[0].url);
                 }
+                else
+                {
+                    this.Leave(msg);
+                }
             });
+        }
+    }
+
+    async Pause(msg: Message)
+    {
+        if (this.music && this.music.dispatcher && !this.music.dispatcher.paused)
+        {
+            this.music.dispatcher.pause();
+        }
+    }
+
+    async Skip(msg: Message)
+    {
+        if (this.music && this.music.dispatcher)
+        {
+            this.Pause(msg);
+            this.music.dispatcher.end();
         }
     }
 
@@ -278,16 +294,22 @@ export class BestBot implements Bot
                 await this.Help(msg);
                 break;
             case "ping":
-                this.Ping(msg);
+                await this.Ping(msg);
                 break;
             case "join":
                 await this.Join(msg);
                 break;
             case "leave":
-                this.Leave(msg);
+                await this.Leave(msg);
                 break;
             case "play":
-                this.Play(msg);
+                await this.Play(msg);
+                break;
+            case "pause":
+                await this.Pause(msg);
+                break;
+            case "skip":
+                await this.Skip(msg);
                 break;
         }
     }

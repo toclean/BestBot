@@ -25,6 +25,16 @@
             "name": "Play",
             "cmd": "play",
             "summary": "Adds and plays a song"
+        },
+        {
+            "name": "Pause",
+            "cmd": "pause",
+            "summary": "Pauses the music"
+        },
+        {
+            "name": "Skip",
+            "cmd": "skip",
+            "summary": "Skips the current song in queue"
         }
     ]
 }
