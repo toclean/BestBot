@@ -6,8 +6,11 @@ import { Client, Message, VoiceChannel, VoiceConnection, MessageEmbed } from "di
 import { Command, CommandList } from "./Command";
 import { Logger } from "./Logger";
 import ytdl from 'ytdl-core';
-import ytsearch from 'youtube-search';
+import ytsearch, { YouTubeSearchResults } from 'youtube-search';
 import { Song } from "./Song";
+import { PlaylistData } from "./PlaylistItem";
+
+let ytplaylist = require("youtube-playlist");
 
 export class BestBot implements Bot
 {
@@ -90,7 +93,6 @@ export class BestBot implements Bot
             let command = msg.content.substring(this.prefix.length).split(' ')[0];
             if (!this.commands.has(command)) return;
 
-            console.log('valid');
             this.HandleCommand(msg);
         });
     }
@@ -143,6 +145,34 @@ export class BestBot implements Bot
             this.voiceConnection!.disconnect();
             this.voiceConnection = undefined;
         }
+
+        if (this.music && this.music.queue)
+        {
+            this.music.queue.songs = [];
+            this.music.queue.playing = false;
+        }
+    }
+
+    private async PlayPlayList(msg: Message, search: string)
+    {
+        let playlist: PlaylistData;
+
+        await ytplaylist(search, 'url').then((res: PlaylistData) => {
+            playlist = res;
+        });
+
+        let playlistInfo: ytdl.videoInfo[] = [];
+        for (let i = 0; i < playlist!.data.playlist.length; i++)
+        {
+            await ytdl.getInfo(playlist!.data.playlist[i], (error, info) =>
+            {
+                console.log(info);
+                playlistInfo.push(info);
+            });
+        }
+
+        console.log(playlistInfo);
+
     }
 
     private async PlayLink(msg: Message, search: string)
@@ -238,7 +268,14 @@ export class BestBot implements Bot
 
         const search = msg.content.substring(msg.content.indexOf(' ') + 1);
 
-        if (search.includes("http"))
+        if (search.includes("list="))
+        {
+            //var playlistId = search.split("list=")[1];
+
+            //console.log(playlistId);
+            this.PlayPlayList(msg, search);
+        }
+        else if (search.includes("http"))
         {
             this.PlayLink(msg, search);
         }
