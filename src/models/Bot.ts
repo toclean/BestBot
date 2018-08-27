@@ -4,14 +4,8 @@ import { Music } from "./Music";
 
 export interface Bot
 {
-    client: Client | undefined;
+    client: Client;
+    music: Music;
     voiceChannel: VoiceChannel | undefined;
     voiceConnection: VoiceConnection | undefined;
-    music: Music | undefined;
-
-    hasClient(): boolean;
-
-    hasVoice(): boolean;
-
-    hasMusic(): boolean;
 }
