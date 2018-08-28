@@ -5,6 +5,7 @@ import { Config } from "./Config";
 import { Logger } from "./Logger";
 import { Song } from "./Song";
 import ytdl from "ytdl-core";
+import {} from "datejs";
 
 export class BestBot implements Bot
 {
@@ -81,6 +82,17 @@ export class BestBot implements Bot
         this.music.dispatcher = undefined;
     }
 
+    private async GetSongInfo(msg: Message, search: string): Promise<ytdl.videoInfo>
+    {
+        return new Promise<ytdl.videoInfo>(async (resolve, reject) =>
+        {
+            await ytdl.getInfo(search, (error, info) =>
+            {
+                resolve(info);
+            });
+        });
+    }
+
     // Plays a song
     private PlaySong(msg: Message, song: Song)
     {
@@ -92,10 +104,9 @@ export class BestBot implements Bot
 
         this.music.dispatcher.on("speaking", (speaking) => 
         {
-            console.log(this.music.queue.songs.length)
            if (speaking)
            {
-               msg.channel.send(`Now playing: ${song.title} requested by <@${msg.author.id}>`);
+               msg.channel.send(`Now playing: ${song.title}-${song.length} requested by <@${msg.author.id}>`);
            }
            else
            {
@@ -113,6 +124,17 @@ export class BestBot implements Bot
         });
     }
 
+    private TimeString(time: string)
+    {
+        let realTime = Number(time);
+        let hours = Math.round(realTime / 3600);
+        realTime = realTime % 3600;
+        let minutes = Math.round(realTime / 60);
+        let seconds = realTime % 60;
+
+        return `${(hours != 0) ? `${hours}:` : ""}${(minutes !+ 0) ? `${minutes}:` : ""}${(seconds != 0) ? `${seconds}` : ""}`;
+    }
+
     private async Play(msg: Message)
     {
         if ((this.voiceChannel == undefined || this.voiceChannel == null) || (this.voiceConnection == undefined || this.voiceConnection == null))
@@ -123,10 +145,13 @@ export class BestBot implements Bot
         let search = msg.content.substring(this.config!.prefix!.length).split(' ')[1];
 
         // TODO: Remove hard code
-        this.music.queue.songs.push(new Song("test", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
-        this.music.queue.songs.push(new Song("tasdasdest", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
-        this.PlaySong(msg, this.music.queue.songs[0]);
-
+        //this.music.queue.songs.push(new Song("test", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
+        //this.music.queue.songs.push(new Song("tasdasdest", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
+        this.GetSongInfo(msg, 'https://www.youtube.com/watch?v=YKsQJVzr3a8').then((value) =>
+        {
+            this.PlaySong(msg, new Song(value.title, 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
+        }).catch(console.error);
+        //console.log("info: " + info);
         //if (this.music.dispatcher == undefined || this.music.dispatcher == null) return msg.channel.send("No song is currently playing");
     }
 
