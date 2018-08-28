@@ -92,10 +92,24 @@ export class BestBot implements Bot
 
         this.music.dispatcher.on("speaking", (speaking) => 
         {
+            console.log(this.music.queue.songs.length)
            if (speaking)
            {
                msg.channel.send(`Now playing: ${song.title} requested by <@${msg.author.id}>`);
-           } 
+           }
+           else
+           {
+                this.music.queue.songs.shift();
+                let nextSong = this.music.queue.songs[0];
+                if (nextSong == undefined)
+                {
+                    this.Leave(msg);
+                }
+                else
+                {
+                    this.PlaySong(msg, nextSong);
+                }
+           }
         });
     }
 
@@ -109,7 +123,9 @@ export class BestBot implements Bot
         let search = msg.content.substring(this.config!.prefix!.length).split(' ')[1];
 
         // TODO: Remove hard code
-        this.PlaySong(msg, new Song("test", "https://www.youtube.com/watch?v=nSoioG1beY8", "100", msg.author));
+        this.music.queue.songs.push(new Song("test", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
+        this.music.queue.songs.push(new Song("tasdasdest", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
+        this.PlaySong(msg, this.music.queue.songs[0]);
 
         //if (this.music.dispatcher == undefined || this.music.dispatcher == null) return msg.channel.send("No song is currently playing");
     }
