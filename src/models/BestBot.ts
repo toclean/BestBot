@@ -104,9 +104,9 @@ export class BestBot implements Bot
         this.music.dispatcher.on("speaking", (speaking) => 
         {
             if (speaking)
-           {
+            {
                msg.channel.send(`Now playing: ${song.title}-${song.length} requested by <@${msg.author.id}>`);
-           }
+            }
         });
 
         this.music.dispatcher.on("end", (reason) =>
@@ -132,7 +132,7 @@ export class BestBot implements Bot
         let minutes = Math.round(realTime / 60);
         let seconds = realTime % 60;
 
-        return `${(hours != 0) ? `${hours}:` : "00:"}${(minutes !+ 0) ? `${minutes}:` : "00:"}${(seconds != 0) ? `${(seconds > 10) ? seconds : "0" + seconds}` : "00"}`;
+        return `${(hours != 0) ? `${(hours > 10) ? hours : "0" + hours}:` : "00:"}${(minutes !+ 0) ? `${(minutes > 10) ? minutes : "0" + minutes}:` : "00:"}${(seconds != 0) ? `${(seconds > 10) ? seconds : "0" + seconds}` : "00"}`;
     }
 
     private async Play(msg: Message)
@@ -145,17 +145,13 @@ export class BestBot implements Bot
         let search = msg.content.substring(this.config!.prefix!.length).split(' ')[1];
 
         // TODO: Remove hard code
-        //this.music.queue.songs.push(new Song("test", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
-        //this.music.queue.songs.push(new Song("tasdasdest", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
-        this.GetSongInfo(msg, 'https://www.youtube.com/watch?v=YKsQJVzr3a8').then((value) =>
+        this.GetSongInfo(msg, search).then((value) =>
         {
-            this.music.queue.songs.push(new Song(value.title, 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
-            this.music.queue.songs.push(new Song("title 2", 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
+            this.music.queue.songs.push(new Song(value.title, search, this.TimeString(value.length_seconds), msg.author));
 
+            
             this.PlaySong(msg, this.music.queue.songs[0]);
         }).catch(console.error);
-        //console.log("info: " + info);
-        //if (this.music.dispatcher == undefined || this.music.dispatcher == null) return msg.channel.send("No song is currently playing");
     }
 
     private Pause(msg: Message)
@@ -196,6 +192,18 @@ export class BestBot implements Bot
         }
     }
 
+    private Skip(msg: Message)
+    {
+        if ((this.voiceChannel == undefined || this.voiceChannel == null) || (this.voiceConnection == undefined || this.voiceConnection == null)
+        || (this.music.dispatcher == undefined || this.music.dispatcher == null))
+        {
+            msg.channel.send("Play a song first");
+            return;
+        }
+
+        this.music.dispatcher.emit("end");
+    } 
+
     private ProcessMessage(msg: Message)
     {
         switch (msg.content.substring(this.config!.prefix!.length).split(' ')[0] || msg.content.substring(this.config!.prefix!.length))
@@ -214,6 +222,9 @@ export class BestBot implements Bot
                 break;
             case "resume":
                 this.Resume(msg);
+                break;
+            case "skip":
+                this.Skip(msg);
                 break;
         }
     }
