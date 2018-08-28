@@ -5,7 +5,6 @@ import { Config } from "./Config";
 import { Logger } from "./Logger";
 import { Song } from "./Song";
 import ytdl from "ytdl-core";
-import {} from "datejs";
 
 export class BestBot implements Bot
 {
@@ -104,23 +103,24 @@ export class BestBot implements Bot
 
         this.music.dispatcher.on("speaking", (speaking) => 
         {
-           if (speaking)
+            if (speaking)
            {
                msg.channel.send(`Now playing: ${song.title}-${song.length} requested by <@${msg.author.id}>`);
            }
-           else
-           {
-                this.music.queue.songs.shift();
-                let nextSong = this.music.queue.songs[0];
-                if (nextSong == undefined)
-                {
-                    this.Leave(msg);
-                }
-                else
-                {
-                    this.PlaySong(msg, nextSong);
-                }
-           }
+        });
+
+        this.music.dispatcher.on("end", (reason) =>
+        {
+            this.music.queue.songs.shift();
+            let nextSong = this.music.queue.songs[0];
+            if (nextSong == undefined)
+            {
+                this.Leave(msg);
+            }
+            else
+            {
+                this.PlaySong(msg, nextSong);
+            }
         });
     }
 
@@ -132,7 +132,7 @@ export class BestBot implements Bot
         let minutes = Math.round(realTime / 60);
         let seconds = realTime % 60;
 
-        return `${(hours != 0) ? `${hours}:` : ""}${(minutes !+ 0) ? `${minutes}:` : ""}${(seconds != 0) ? `${seconds}` : ""}`;
+        return `${(hours != 0) ? `${hours}:` : "00:"}${(minutes !+ 0) ? `${minutes}:` : "00:"}${(seconds != 0) ? `${(seconds > 10) ? seconds : "0" + seconds}` : "00"}`;
     }
 
     private async Play(msg: Message)
@@ -149,7 +149,10 @@ export class BestBot implements Bot
         //this.music.queue.songs.push(new Song("tasdasdest", "https://www.youtube.com/watch?v=YKsQJVzr3a8", "100", msg.author));
         this.GetSongInfo(msg, 'https://www.youtube.com/watch?v=YKsQJVzr3a8').then((value) =>
         {
-            this.PlaySong(msg, new Song(value.title, 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
+            this.music.queue.songs.push(new Song(value.title, 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
+            this.music.queue.songs.push(new Song("title 2", 'https://www.youtube.com/watch?v=YKsQJVzr3a8', this.TimeString(value.length_seconds), msg.author));
+
+            this.PlaySong(msg, this.music.queue.songs[0]);
         }).catch(console.error);
         //console.log("info: " + info);
         //if (this.music.dispatcher == undefined || this.music.dispatcher == null) return msg.channel.send("No song is currently playing");
