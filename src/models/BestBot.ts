@@ -77,6 +77,8 @@ export class BestBot implements Bot
             this.voiceChannel.leave();
             this.voiceChannel = undefined;
         }
+
+        this.music.dispatcher = undefined;
     }
 
     // Plays a song
@@ -87,6 +89,14 @@ export class BestBot implements Bot
         let stream = ytdl(song.url, { quality: "highestaudio" });
         
         this.music.dispatcher = this.voiceConnection!.playStream(stream);
+
+        this.music.dispatcher.on("speaking", (speaking) => 
+        {
+           if (speaking)
+           {
+               msg.channel.send(`Now playing: ${song.title} requested by <@${msg.author.id}>`);
+           } 
+        });
     }
 
     private async Play(msg: Message)
@@ -104,6 +114,44 @@ export class BestBot implements Bot
         //if (this.music.dispatcher == undefined || this.music.dispatcher == null) return msg.channel.send("No song is currently playing");
     }
 
+    private Pause(msg: Message)
+    {
+        if ((this.voiceChannel == undefined || this.voiceChannel == null) || (this.voiceConnection == undefined || this.voiceConnection == null)
+        || (this.music.dispatcher == undefined || this.music.dispatcher == null))
+        {
+            msg.channel.send("Play a song first");
+            return;
+        }
+
+        if (this.music.dispatcher.paused)
+        {
+            msg.channel.send("Song is already paused");
+        }
+        else
+        {
+            this.music.dispatcher.pause();
+        }
+    }
+
+    private Resume(msg: Message)
+    {
+        if ((this.voiceChannel == undefined || this.voiceChannel == null) || (this.voiceConnection == undefined || this.voiceConnection == null)
+        || (this.music.dispatcher == undefined || this.music.dispatcher == null))
+        {
+            msg.channel.send("Play a song first");
+            return;
+        }
+
+        if (this.music.dispatcher.paused)
+        {
+            this.music.dispatcher.resume();
+        }
+        else
+        {
+            msg.channel.send("Song is already playing");
+        }
+    }
+
     private ProcessMessage(msg: Message)
     {
         switch (msg.content.substring(this.config!.prefix!.length).split(' ')[0] || msg.content.substring(this.config!.prefix!.length))
@@ -116,6 +164,12 @@ export class BestBot implements Bot
                 break;
             case "play":
                 this.Play(msg);
+                break;
+            case "pause":
+                this.Pause(msg);
+                break;
+            case "resume":
+                this.Resume(msg);
                 break;
         }
     }
